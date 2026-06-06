@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>HASSAN FIFO GAME | Page Replacement Algorithm Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0b2b26 0%, #1a3f2c 100%);
+            font-family: 'Segoe UI', 'Poppins', 'Roboto', 'Courier New', monospace;
+            min-height: 100vh;
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-container {
+            max-width: 1400px;
+            width: 100%;
+            background: #fef7e9;
+            border-radius: 64px;
+            box-shadow: 0 30px 45px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .game-header {
+            background: #0f2c21;
+            padding: 28px 32px;
+            text-align: center;
+            border-bottom: 5px solid #f7b32b;
+        }
+
+        .game-header h1 {
+            font-size: 2.6rem;
+            color: #ffeaac;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0 #1e4d38;
+        }
+
+        .game-header p {
+            color: #cce3de;
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+
+        .control-panel {
+            background: #fff6e0;
+            padding: 25px 32px;
+            border-bottom: 2px dashed #ddcca8;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 2;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            font-weight: 700;
+            color: #2c5a3e;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group input {
+            padding: 12px 18px;
+            border-radius: 60px;
+            border: 2px solid #cbae7a;
+            background: white;
+            font-size: 1rem;
+            font-family: monospace;
+            font-weight: bold;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #f7b32b;
+            box-shadow: 0 0 0 3px rgba(247,179,43,0.3);
+        }
+
+        button {
+            background: #2e7d5e;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            box-shadow: 0 3px 0 #1a4938;
+        }
+
+        button:active {
+            transform: translateY(2px);
+        }
+
+        .btn-reset {
+            background: #b4652a;
+            box-shadow: 0 3px 0 #6e3c12;
+        }
+
+        .btn-check {
+            background: #2c6e9e;
+            box-shadow: 0 3px 0 #1c486b;
+        }
+
+        .stats {
+            background: #e9dfc7;
+            padding: 15px 32px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .stat-badge {
+            background: #2c3e2b;
+            padding: 8px 18px;
+            border-radius: 60px;
+            color: #f9e0a0;
+        }
+
+        .simulation-area {
+            padding: 30px 32px;
+            background: #faf3e2;
+            overflow-x: auto;
+        }
+
+        .page-sequence {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 35px;
+            justify-content: center;
+        }
+
+        .page-item {
+            background: #e6d8c2;
+            width: 65px;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            font-weight: 800;
+            border-radius: 30px;
+            box-shadow: inset 0 -2px 0 #bbaa88, 0 5px 12px rgba(0,0,0,0.1);
+            font-family: monospace;
+        }
+
+        .frames-visual {
+            background: #dac2924d;
+            border-radius: 48px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .memory-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .frame-card {
+            background: linear-gradient(145deg, #3e3c36, #26241f);
+            width: 100px;
+            height: 110px;
+            border-radius: 24px;
+            box-shadow: 0 12px 18px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ffefbf;
+        }
+
+        .frame-number {
+            font-size: 0.8rem;
+            background: #f7b32b80;
+            padding: 4px 10px;
+            border-radius: 40px;
+            margin-bottom: 12px;
+        }
+
+        .frame-content {
+            font-size: 2.3rem;
+            font-weight: 800;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 30px;
+            background: #1f1d18;
+            color: #ffd966;
+        }
+
+        .empty-frame {
+            opacity: 0.6;
+            color: #a9a07b;
+        }
+
+        .step-table {
+            background: #fff6ec;
+            border-radius: 36px;
+            padding: 15px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .step-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .step-table th, .step-table td {
+            border-bottom: 1px solid #e2cfaa;
+            padding: 14px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .step-table th {
+            background: #cfb27c;
+            color: #1e2d1a;
+            font-size: 0.95rem;
+        }
+
+        .fault-badge {
+            background: #e15554;
+            color: white;
+            border-radius: 50px;
+            padding: 5px 14px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .hit-badge {
+            background: #3b9e6d;
+            color: white;
+            border-radius: 50px;
+            padding: 5px 14px;
+        }
+
+        .explanation-cell {
+            font-size: 0.85rem;
+            text-align: left;
+            color: #3a2a1a;
+            max-width: 280px;
+        }
+
+        .user-answer-area {
+            background: #e7dbbc;
+            margin-top: 25px;
+            border-radius: 60px;
+            padding: 18px 25px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .answer-input {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .answer-input input {
+            width: 110px;
+            padding: 10px;
+            border-radius: 40px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: 2px solid #b38f50;
+        }
+
+        .feedback {
+            font-weight: bold;
+            font-size: 1rem;
+            background: #2e3820;
+            padding: 8px 20px;
+            border-radius: 60px;
+            color: #ffe3a3;
+        }
+
+        @media (max-width: 780px) {
+            .page-item { width: 45px; height: 45px; font-size: 1.2rem; }
+            .frame-card { width: 75px; height: 90px; }
+            .frame-content { width: 50px; height: 50px; font-size: 1.5rem; }
+            .explanation-cell { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container" id="gameRoot">
+    <div class="game-header">
+        <h1>🔥 HASSAN FIFO GAME 🔥</h1>
+        <p>📌 First In First Out Page Replacement | Understand each HIT / FAULT with reason | Test your knowledge!</p>
+    </div>
+
+    <div class="control-panel">
+        <div class="input-group">
+            <label>📜 Page Reference String (use commas or spaces)</label>
+            <input type="text" id="refStringInput" placeholder="Example: 1,3,0,3,5,6,3  or 7,0,1,2,0,3,0,4" value="1,3,0,3,5,6,3">
+        </div>
+        <div class="input-group">
+            <label>🗃️ Number of Frames</label>
+            <input type="number" id="frameCountInput" min="1" max="10" value="3">
+        </div>
+        <button id="runSimulateBtn">🚀 RUN FIFO SIMULATION</button>
+        <button id="resetGameBtn" class="btn-reset">🔄 RESET ANSWERS</button>
+    </div>
+
+    <div class="stats" id="statsPanel">
+        <span>📊 SIMULATION STATS</span>
+        <span id="faultStatDisplay">Page Faults: --</span>
+        <span id="hitStatDisplay">Page Hits: --</span>
+        <span id="totalRefDisplay">Total Refs: --</span>
+    </div>
+
+    <div class="simulation-area">
+        <div>
+            <div style="font-weight:bold; margin-bottom:8px;">🔢 Reference Sequence</div>
+            <div class="page-sequence" id="pageSequenceContainer"></div>
+        </div>
+
+        <div class="frames-visual">
+            <div class="frames-title" style="font-weight:bold; margin-bottom:12px;">🧠 FINAL FRAME STATE (After all steps)</div>
+            <div class="memory-grid" id="framesContainer"></div>
+        </div>
+
+        <div class="step-table">
+            <div style="margin-bottom: 10px; font-weight: bold;">📋 STEP-BY-STEP FIFO ANALYSIS (with explanation for each HIT/FAULT)</div>
+            <div style="overflow-x: auto;">
+                <table id="fifoStepsTable">
+                    <thead>
+                        <tr><th>Step</th><th>Ref Page</th><th>Frames Content (after access)</th><th>Result</th><th>Why? (Explanation)</th></tr>
+                    </thead>
+                    <tbody id="fifoTableBody">
+                        <tr><td colspan="5">Click "RUN FIFO SIMULATION" to start</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="user-answer-area">
+            <div style="font-weight:800;">🎯 YOUR CHALLENGE: Predict total Page Faults & Hits !</div>
+            <div class="answer-input">
+                <input type="number" id="userFaultInput" placeholder="Faults" value="">
+                <input type="number" id="userHitInput" placeholder="Hits" value="">
+                <button id="checkAnswerBtn" class="btn-check">✅ CHECK MY ANSWER</button>
+            </div>
+            <div id="feedbackMsg" class="feedback">⚡ Enter fault & hit numbers, then press CHECK</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const refStringInput = document.getElementById('refStringInput');
+    const frameCountInput = document.getElementById('frameCountInput');
+    const runBtn = document.getElementById('runSimulateBtn');
+    const resetBtn = document.getElementById('resetGameBtn');
+    const checkBtn = document.getElementById('checkAnswerBtn');
+    const pageSeqContainer = document.getElementById('pageSequenceContainer');
+    const framesContainer = document.getElementById('framesContainer');
+    const fifoTableBody = document.getElementById('fifoTableBody');
+    const faultStatDisplay = document.getElementById('faultStatDisplay');
+    const hitStatDisplay = document.getElementById('hitStatDisplay');
+    const totalRefDisplay = document.getElementById('totalRefDisplay');
+    const userFaultInput = document.getElementById('userFaultInput');
+    const userHitInput = document.getElementById('userHitInput');
+    const feedbackMsgDiv = document.getElementById('feedbackMsg');
+
+    // store simulation data
+    let currentSimulation = {
+        referenceArray: [],
+        frameCount: 3,
+        steps: [],          // each step: {step, ref, framesAfter, result, explanation, faultCount, hitCount}
+        totalFaults: 0,
+        totalHits: 0,
+        totalRefs: 0
+    };
+
+    // parse string to numbers
+    function parseReferenceString(str) {
+        let parts = str.split(/[ ,]+/);
+        let result = [];
+        for(let part of parts) {
+            let trimmed = part.trim();
+            if(trimmed !== "" && !isNaN(parseInt(trimmed))) {
+                result.push(parseInt(trimmed));
+            }
+        }
+        return result;
+    }
+
+    // FIFO simulation with detailed explanation for each step
+    function simulateFIFOWithExplanation(refArray, frameCount) {
+        let frames = [];        // store pages in order (FIFO queue)
+        let stepsDetails = [];
+        let faults = 0;
+        let hits = 0;
+
+        for(let i = 0; i < refArray.length; i++) {
+            let currentPage = refArray[i];
+            let isFault = false;
+            let explanation = "";
+            let framesBefore = [...frames];
+            
+            // check if page is already in frames (HIT)
+            let pageIndex = frames.indexOf(currentPage);
+            if(pageIndex !== -1) {
+                // HIT: page exists, no change in frames order
+                hits++;
+                isFault = false;
+                explanation = `Page ${currentPage} is already present in frames (Frame ${pageIndex}). So it's a HIT. No replacement needed.`;
+            } 
+            else {
+                // PAGE FAULT
+                faults++;
+                isFault = true;
+                if(frames.length < frameCount) {
+                    // frames not full -> simply add
+                    frames.push(currentPage);
+                    explanation = `Page ${currentPage} NOT in memory → PAGE FAULT. Frame slot available (${frames.length-1}), so loaded directly.`;
+                } 
+                else {
+                    // FRAMES FULL: remove oldest (FIFO)
+                    let removed = frames.shift();
+                    frames.push(currentPage);
+                    explanation = `Page ${currentPage} NOT in memory → PAGE FAULT. Frames full, removed oldest page ${removed} (FIFO rule) and loaded ${currentPage}.`;
+                }
+            }
+            
+            // build frames display (fill null for empty slots to show properly)
+            let framesDisplay = [...frames];
+            while(framesDisplay.length < frameCount) framesDisplay.push(null);
+            
+            // result label
+            let resultLabel = isFault ? "PAGE FAULT" : "HIT";
+            
+            stepsDetails.push({
+                step: i+1,
+                reference: currentPage,
+                framesState: framesDisplay,
+                result: resultLabel,
+                isFault: isFault,
+                isHit: !isFault,
+                explanation: explanation,
+                cumulativeFaults: faults,
+                cumulativeHits: hits
+            });
+        }
+        
+        return {
+            steps: stepsDetails,
+            totalFaults: faults,
+            totalHits: hits,
+            totalRefs: refArray.length,
+            finalFrames: stepsDetails.length > 0 ? stepsDetails[stepsDetails.length-1].framesState : new Array(frameCount).fill(null)
+        };
+    }
+
+    // render page sequence chips
+    function renderPageSequence(refArray) {
+        pageSeqContainer.innerHTML = '';
+        if(!refArray.length) {
+            pageSeqContainer.innerHTML = '<div style="color:#888;">⚠️ No valid sequence</div>';
+            return;
+        }
+        refArray.forEach(page => {
+            const chip = document.createElement('div');
+            chip.className = 'page-item';
+            chip.innerText = page;
+            pageSeqContainer.appendChild(chip);
+        });
+    }
+
+    // render final frame boxes
+    function renderFrames(framesArray, frameCount) {
+        framesContainer.innerHTML = '';
+        for(let i = 0; i < frameCount; i++) {
+            const frameCard = document.createElement('div');
+            frameCard.className = 'frame-card';
+            const frameNumSpan = document.createElement('div');
+            frameNumSpan.className = 'frame-number';
+            frameNumSpan.innerText = `Frame ${i}`;
+            const contentSpan = document.createElement('div');
+            contentSpan.className = 'frame-content';
+            let pageVal = (framesArray[i] !== undefined && framesArray[i] !== null) ? framesArray[i] : null;
+            if(pageVal === null || pageVal === undefined) {
+                contentSpan.innerText = '⚡';
+                contentSpan.classList.add('empty-frame');
+            } else {
+                contentSpan.innerText = pageVal;
+            }
+            frameCard.appendChild(frameNumSpan);
+            frameCard.appendChild(contentSpan);
+            framesContainer.appendChild(frameCard);
+        }
+    }
+
+    // render step table with explanation column
+    function renderStepsTable(steps) {
+        fifoTableBody.innerHTML = '';
+        if(!steps || steps.length === 0) {
+            fifoTableBody.innerHTML = '<tr><td colspan="5">No data. Click RUN SIMULATION.</td></tr>';
+            return;
+        }
+        steps.forEach(step => {
+            const row = document.createElement('tr');
+            
+            // step number
+            const tdStep = document.createElement('td'); tdStep.innerText = step.step; tdStep.style.fontWeight='bold';
+            // reference page
+            const tdRef = document.createElement('td'); tdRef.innerText = step.reference; tdRef.style.fontWeight='bold';
+            // frames state
+            const tdFrames = document.createElement('td');
+            let framesStr = step.framesState.map(f => (f === null || f === undefined) ? '⬚' : f).join(' | ');
+            tdFrames.innerText = framesStr;
+            tdFrames.style.fontFamily = 'monospace';
+            
+            // result badge
+            const tdRes = document.createElement('td');
+            if(step.result === 'PAGE FAULT') {
+                tdRes.innerHTML = `<span class="fault-badge">❌ FAULT</span>`;
+            } else {
+                tdRes.innerHTML = `<span class="hit-badge">✅ HIT</span>`;
+            }
+            
+            // explanation cell
+            const tdExp = document.createElement('td');
+            tdExp.className = 'explanation-cell';
+            tdExp.innerText = step.explanation;
+            
+            row.appendChild(tdStep);
+            row.appendChild(tdRef);
+            row.appendChild(tdFrames);
+            row.appendChild(tdRes);
+            row.appendChild(tdExp);
+            fifoTableBody.appendChild(row);
+        });
+    }
+    
+    // update stats panel
+    function updateStatsDisplay(faults, hits, total) {
+        faultStatDisplay.innerText = `Page Faults: ${faults}`;
+        hitStatDisplay.innerText = `Page Hits: ${hits}`;
+        totalRefDisplay.innerText = `Total Refs: ${total}`;
+    }
+
+    // main simulation runner
+    function runSimulation() {
+        let refStr = refStringInput.value;
+        let frameCount = parseInt(frameCountInput.value);
+        if(isNaN(frameCount) || frameCount < 1) frameCount = 1;
+        if(frameCount > 12) frameCount = 12;
+        
+        let refArray = parseReferenceString(refStr);
+        if(refArray.length === 0) {
+            alert("Please enter a valid page reference string (e.g., 1,3,0,3,5,6,3)");
+            return;
+        }
+        
+        // get FIFO result with explanations
+        const sim = simulateFIFOWithExplanation(refArray, frameCount);
+        currentSimulation.referenceArray = refArray;
+        currentSimulation.frameCount = frameCount;
+        currentSimulation.steps = sim.steps;
+        currentSimulation.totalFaults = sim.totalFaults;
+        currentSimulation.totalHits = sim.totalHits;
+        currentSimulation.totalRefs = sim.totalRefs;
+        
+        // render UI
+        renderPageSequence(refArray);
+        let finalFrames = sim.finalFrames;
+        renderFrames(finalFrames, frameCount);
+        renderStepsTable(sim.steps);
+        updateStatsDisplay(sim.totalFaults, sim.totalHits, sim.totalRefs);
+        
+        // Clear previous answers and feedback
+        userFaultInput.value = '';
+        userHitInput.value = '';
+        feedbackMsgDiv.innerHTML = '✅ New simulation ready! Enter your guess for Faults & Hits and press CHECK.';
+        feedbackMsgDiv.style.background = '#2e3820';
+        feedbackMsgDiv.style.color = '#ffe3a3';
+    }
+    
+    // reset just the answer fields and feedback
+    function resetAnswers() {
+        if(currentSimulation.steps.length === 0) {
+            // if no simulation, run default
+            refStringInput.value = "1,3,0,3,5,6,3";
+            frameCountInput.value = "3";
+            runSimulation();
+        } else {
+            userFaultInput.value = '';
+            userHitInput.value = '';
+            feedbackMsgDiv.innerHTML = '🧹 Answers cleared. Now guess again!';
+            feedbackMsgDiv.style.background = '#2e3820';
+        }
+    }
+    
+    // check user answer against correct simulation numbers
+    function checkUserAnswer() {
+        if(currentSimulation.steps.length === 0) {
+            feedbackMsgDiv.innerHTML = '⚠️ Please run simulation first (click RUN FIFO SIMULATION)';
+            feedbackMsgDiv.style.background = "#984b43";
+            return;
+        }
+        let userFault = parseInt(userFaultInput.value);
+        let userHit = parseInt(userHitInput.value);
+        if(isNaN(userFault) || isNaN(userHit)) {
+            feedbackMsgDiv.innerHTML = '❌ Enter both Page Faults and Page Hits numbers!';
+            feedbackMsgDiv.style.background = "#984b43";
+            return;
+        }
+        
+        const correctFault = currentSimulation.totalFaults;
+        const correctHit = currentSimulation.totalHits;
+        
+        if(userFault === correctFault && userHit === correctHit) {
+            feedbackMsgDiv.innerHTML = `✅🎉 PERFECT! Correct answer! Faults = ${correctFault}, Hits = ${correctHit}. You mastered FIFO! 🎉`;
+            feedbackMsgDiv.style.background = "#2c7840";
+            feedbackMsgDiv.style.color = "#f9f0c0";
+        } else {
+            feedbackMsgDiv.innerHTML = `❌ Wrong answer! Correct values: Page Faults = ${correctFault}, Page Hits = ${correctHit}. Your guess: Faults=${userFault}, Hits=${userHit}. Review steps table carefully and try again.`;
+            feedbackMsgDiv.style.background = "#9e3c2b";
+            feedbackMsgDiv.style.color = "white";
+        }
+    }
+    
+    // attach event listeners
+    runBtn.addEventListener('click', runSimulation);
+    resetBtn.addEventListener('click', resetAnswers);
+    checkBtn.addEventListener('click', checkUserAnswer);
+    
+    // initial load on page ready
+    window.addEventListener('DOMContentLoaded', () => {
+        // default values as shown
+        refStringInput.value = "1,3,0,3,5,6,3";
+        frameCountInput.value = "3";
+        runSimulation();
+    });
+</script>
+</body>
+</html>
